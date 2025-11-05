@@ -15,7 +15,7 @@ extension URLSessionConfiguration {
     public static let debug = {
         defer {
             DispatchQueue.main.async {
-                _ = NetworkLogManager.shared
+                DebugMenuView.initialize()
             }
         }
         let config = URLSessionConfiguration.default

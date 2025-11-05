@@ -10,18 +10,37 @@ import SwiftUI
 struct FileSystemLogsView: View {
     @Environment(FileSystemLogManager.self) private var manager
     
+    @State private var isShowingPersistedLogs = false
+    
     var body: some View {
         VStack(spacing: .zero) {
-            if manager.logs.isEmpty {
+            if isShowingPersistedLogs,
+               !manager.persistedLogs.isEmpty {
+                List(manager.persistedLogs) { log in
+                    FileSystemLogSectionView(log: log, isPersisted: Binding { true } set: { _ in manager.removePersistedLog(log) })
+                }
+            } else if manager.logs.isEmpty {
                 ContentUnavailableView("No Logs", systemImage: "folder.badge.questionmark")
             } else {
                 List(manager.logs) { log in
-                    FileSystemLogSectionView(log: log)
+                    let isPersistedBinding = Binding<Bool> {
+                        manager.persistedLogs.contains(where: { $0.id == log.id })
+                    } set: { value in
+                        if value {
+                            manager.persist(log)
+                        } else {
+                            manager.removePersistedLog(log)
+                        }
+                    }
+                    FileSystemLogSectionView(log: log, isPersisted: isPersistedBinding)
                 }
             }
         }
         .animation(.smooth, value: manager.logs)
         .toolbar {
+            if !manager.persistedLogs.isEmpty {
+                Toggle("Persisted Logs", systemImage: "bookmark.fill", isOn: $isShowingPersistedLogs.animation(.smooth))
+            }
             Button("Clear", systemImage: "clear", role: .destructive) {
                 manager.logs.removeAll()
             }
@@ -32,6 +51,7 @@ struct FileSystemLogsView: View {
 
 private struct FileSystemLogSectionView: View {
     var log: FileSystemLog
+    @Binding var isPersisted: Bool
     
     var body: some View {
         Section {
@@ -65,7 +85,15 @@ private struct FileSystemLogSectionView: View {
                 }
             }
         } header: {
-            Label(log.event.description, systemImage: log.event.systemImage)
+            HStack(spacing: 8) {
+                Label(log.event.description, systemImage: log.event.systemImage)
+                Spacer()
+                Toggle("Persisted", systemImage: isPersisted ? "bookmark.fill" : "bookmark", isOn: $isPersisted)
+                    .if(UIDevice.current.userInterfaceIdiom == .phone) {
+                        $0.labelStyle(.iconOnly)
+                    }
+                    .toggleStyle(.button)
+            }
         }
     }
 }

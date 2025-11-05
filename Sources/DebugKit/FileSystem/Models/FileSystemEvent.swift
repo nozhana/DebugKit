@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum FileSystemEvent: RawRepresentable, Equatable, Identifiable, CustomStringConvertible {
+enum FileSystemEvent: RawRepresentable, Equatable, Identifiable, CustomStringConvertible, Codable {
     case delete, write, extend, attrib, link, rename, revoke, funlock, unknown(UInt)
     
     init(rawValue: UInt) {

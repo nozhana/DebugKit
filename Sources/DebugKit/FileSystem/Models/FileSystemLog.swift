@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct FileSystemLog: Identifiable, Equatable {
+struct FileSystemLog: Identifiable, Equatable, Codable {
     var id = UUID()
     var rootDirectory: FileSystemRootDirectory
     var event: FileSystemEvent

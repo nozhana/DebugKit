@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum FileSystemRootDirectory: RawRepresentable, CaseIterable {
+enum FileSystemRootDirectory: RawRepresentable, CaseIterable, Codable {
     case documents
     case caches
     case temporary

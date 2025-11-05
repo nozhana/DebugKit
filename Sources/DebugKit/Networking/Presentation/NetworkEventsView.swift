@@ -96,10 +96,16 @@ private struct NetworkEventSectionView: View {
                 }
                 LabeledContent("Error", value: error.localizedDescription)
             }
-            LabeledContent("Timestamp", value: event.timestamp, format: .dateTime.hour().minute().second().secondFraction(.fractional(3)))
+            LabeledContent("Timestamp", value: event.timestamp, format: dateFormat(for: event.timestamp))
         } header: {
             Label(event.title, systemImage: event.systemImage)
                 .foregroundStyle(event.color.gradient)
         }
+    }
+    
+    private func dateFormat(for date: Date) -> Date.FormatStyle {
+        let format = Date.FormatStyle.dateTime.hour().minute().second().secondFraction(.fractional(3))
+        if Calendar.current.isDateInToday(date) { return format }
+        return format.month().day()
     }
 }

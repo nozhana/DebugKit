@@ -16,8 +16,13 @@ final class NetworkLogManager {
     var logs = Queue<NetworkLog>()
     var events = Queue<NetworkEvent>(capacity: 50)
     
+    private(set) var persistedLogs = Queue<NetworkLog>()
+    
     @ObservationIgnored
     private var cancellables: Set<AnyCancellable> = []
+    
+    @ObservationIgnored
+    private let persistentLogsObserver = FileSystemObserver(path: .networkLogs)
     
     @ObservationIgnored
     @MainActor
@@ -25,9 +30,35 @@ final class NetworkLogManager {
     
     private init() {
         setupBindings()
+        retrievePersistedLogs()
+    }
+    
+    func persist(_ log: NetworkLog) {
+        guard let dto = NetworkLogDTO(log: log),
+              let data = try? JSONEncoder().encode(dto) else { return }
+        let url = URL.networkLogs.appendingPathComponent(log.id.uuidString, conformingTo: .json)
+        try? FileManager.default.removeItem(at: url)
+        try? data.write(to: url)
+    }
+    
+    func removePersistedLog(_ log: NetworkLog) {
+        let url = URL.networkLogs.appendingPathComponent(log.id.uuidString, conformingTo: .json)
+        try? FileManager.default.removeItem(at: url)
+    }
+    
+    private func retrievePersistedLogs() {
+        guard let contents = try? FileManager.default.contentsOfDirectory(at: .networkLogs, includingPropertiesForKeys: nil) else { return }
+        persistedLogs = contents.reduce(into: []) { partialResult, url in
+            guard let data = try? Data(contentsOf: url),
+                  let dto = try? JSONDecoder().decode(NetworkLogDTO.self, from: data) else { return }
+            let log = NetworkLog(dto: dto)
+            partialResult.push(log)
+        }
     }
     
     private func setupBindings() {
+        persistentLogsObserver.onEvent(perform: retrievePersistedLogs)
+        
         notificationCenter.publisher(for: .networkTaskStarted)
             .receive(on: RunLoop.main)
             .sink { [weak self] notification in

@@ -14,13 +14,32 @@ final class FileSystemObserver {
     private var source: DispatchSourceFileSystemObject!
     private var descriptor: Int32 = 0
     
+    typealias EventHandler = (_ event: FileSystemEvent) -> Void
+    private var eventHandler: EventHandler?
+    
     init(path: URL? = nil) {
         let path = path ?? FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         self.path = path
         beginObservation()
     }
     
-    func beginObservation() {
+    deinit {
+        stopObservation()
+    }
+    
+    @discardableResult
+    func onEvent(perform action: @escaping EventHandler) -> Self {
+        eventHandler = action
+        return self
+    }
+    
+    @discardableResult
+    func onEvent(perform action: @escaping () -> Void) -> Self {
+        eventHandler = { _ in action() }
+        return self
+    }
+    
+    private func beginObservation() {
         descriptor = open(path.path(), O_EVTONLY)
         self.source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: descriptor, eventMask: .all, queue: queue)
         defer { source.resume() }
@@ -29,6 +48,7 @@ final class FileSystemObserver {
             let event = FileSystemEvent(self.source.data)
             let userInfo = ["event": event, "path": self.path]
             NotificationCenter.default.post(name: .fileSystemDidChange, object: nil, userInfo: userInfo)
+            self.eventHandler?(event)
             switch event {
             case .delete, .rename:
                 self.stopObservation()
@@ -51,7 +71,7 @@ final class FileSystemObserver {
         }
     }
     
-    func stopObservation() {
-        source.cancel()
+    private func stopObservation() {
+        source?.cancel()
     }
 }

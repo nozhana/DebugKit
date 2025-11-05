@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct DatabaseLog: Identifiable, Equatable {
+struct DatabaseLog: Identifiable, Equatable, Codable {
     var id = UUID()
     var event: DatabaseEvent
     var timestamp: Date = .now

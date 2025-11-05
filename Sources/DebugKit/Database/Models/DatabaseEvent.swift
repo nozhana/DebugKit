@@ -8,7 +8,7 @@
 import Foundation
 import SwiftData
 
-enum DatabaseEvent: Equatable, CustomStringConvertible {
+enum DatabaseEvent: Equatable, CustomStringConvertible, Codable {
     case save(inserted: Set<PersistentIdentifier> = [], updated: Set<PersistentIdentifier> = [], deleted: Set<PersistentIdentifier> = [])
     
     static let save = save()

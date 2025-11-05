@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum NetworkError: RawRepresentable, LocalizedError, CustomStringConvertible, Equatable {
+enum NetworkError: RawRepresentable, LocalizedError, CustomStringConvertible, Equatable, Codable {
     case urlError(URLError)
     case clientError(ClientError)
     case serverError(ServerError)
@@ -78,7 +78,7 @@ enum NetworkError: RawRepresentable, LocalizedError, CustomStringConvertible, Eq
         self = .serverError(serverError)
     }
     
-    enum ClientError: Int, LocalizedError, CustomStringConvertible {
+    enum ClientError: Int, LocalizedError, CustomStringConvertible, Codable {
         case badRequest = 400
         case unauthorized = 401
         case paymentRequired = 402
@@ -172,7 +172,7 @@ enum NetworkError: RawRepresentable, LocalizedError, CustomStringConvertible, Eq
         }
     }
     
-    enum ServerError: Int, LocalizedError, CustomStringConvertible {
+    enum ServerError: Int, LocalizedError, CustomStringConvertible, Codable {
         case internalServerError = 500
         case notImplemented = 501
         case badGateway = 502

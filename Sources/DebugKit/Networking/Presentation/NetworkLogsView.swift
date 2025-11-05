@@ -11,18 +11,37 @@ import SwiftUI
 struct NetworkLogsView: View {
     @Environment(NetworkLogManager.self) private var manager
     
+    @State private var isShowingPersistedLogs = false
+    
     var body: some View {
         VStack(spacing: .zero) {
-            if manager.logs.isEmpty {
+            if isShowingPersistedLogs,
+               !manager.persistedLogs.isEmpty {
+                List(manager.persistedLogs) { log in
+                    NetworkLogSectionView(log: log, isPersisted: Binding { true } set: { _ in manager.removePersistedLog(log) })
+                }
+            } else if manager.logs.isEmpty {
                 ContentUnavailableView("No Logs", systemImage: "cloud")
             } else {
                 List(manager.logs) { log in
-                    NetworkLogSectionView(log: log)
+                    let isPersistedBinding = Binding<Bool> {
+                        manager.persistedLogs.contains(where: { $0.id == log.id })
+                    } set: { value in
+                        if value {
+                            manager.persist(log)
+                        } else {
+                            manager.removePersistedLog(log)
+                        }
+                    }
+                    NetworkLogSectionView(log: log, isPersisted: isPersistedBinding)
                 }
             }
         }
         .animation(.smooth, value: manager.logs)
         .toolbar {
+            if !manager.persistedLogs.isEmpty {
+                Toggle("Persisted Logs", systemImage: "bookmark.fill", isOn: $isShowingPersistedLogs.animation(.smooth))
+            }
             Button("Clear", systemImage: "clear", role: .destructive) {
                 manager.logs.removeAll()
             }
@@ -37,6 +56,7 @@ struct NetworkLogsView: View {
 
 private struct NetworkLogSectionView: View {
     var log: NetworkLog
+    @Binding var isPersisted: Bool
     
     @State private var isJSONExpanded = false
     
@@ -53,11 +73,11 @@ private struct NetworkLogSectionView: View {
                     }
                 }
             }
-            LabeledContent("Start Time", value: log.start, format: .dateTime.hour().minute().second().secondFraction(.fractional(3)))
+            LabeledContent("Start Time", value: log.start, format: dateFormat(for: log.start))
             LabeledContent("Duration", value: log.duration ?? .zero, format: .time(pattern: .minuteSecond(padMinuteToLength: 2, fractionalSecondsLength: 3)))
             LabeledContent("Completed", value: log.isCompleted ? "Yes" : "No")
             if let end = log.end {
-                LabeledContent("End Time", value: end, format: .dateTime.hour().minute().second().secondFraction(.fractional(3)))
+                LabeledContent("End Time", value: end, format: dateFormat(for: end))
             } else {
                 LabeledContent("End Time", value: "N/A")
             }
@@ -194,8 +214,20 @@ private struct NetworkLogSectionView: View {
                     Image(systemName: "questionmark.circle")
                         .foregroundStyle(.secondary)
                 }
+                Spacer()
+                Toggle("Persisted", systemImage: isPersisted ? "bookmark.fill" : "bookmark", isOn: $isPersisted)
+                    .if(UIDevice.current.userInterfaceIdiom == .phone) {
+                        $0.labelStyle(.iconOnly)
+                    }
+                    .toggleStyle(.button)
             }
         }
         .contentTransition(.numericText())
+    }
+    
+    private func dateFormat(for date: Date) -> Date.FormatStyle {
+        let format = Date.FormatStyle.dateTime.hour().minute().second().secondFraction(.fractional(3))
+        if Calendar.current.isDateInToday(date) { return format }
+        return format.month().day()
     }
 }
