@@ -19,7 +19,11 @@ final class NetworkLogManager {
     @ObservationIgnored
     private var cancellables: Set<AnyCancellable> = []
     
-    init() {
+    @ObservationIgnored
+    @MainActor
+    static let shared = NetworkLogManager()
+    
+    private init() {
         setupBindings()
     }
     

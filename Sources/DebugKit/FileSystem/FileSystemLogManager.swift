@@ -21,7 +21,11 @@ final class FileSystemLogManager {
     
     var logs = Queue<FileSystemLog>(capacity: 50)
     
-    init() {
+    @MainActor
+    @ObservationIgnored
+    static let shared = FileSystemLogManager()
+    
+    private init() {
         setupBindings()
     }
     

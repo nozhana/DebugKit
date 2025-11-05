@@ -16,7 +16,11 @@ final class DatabaseLogManager {
     
     var logs = Queue<DatabaseLog>(capacity: 50)
     
-    init() {
+    @MainActor
+    @ObservationIgnored
+    static let shared = DatabaseLogManager()
+    
+    private init() {
         setupBindings()
     }
     

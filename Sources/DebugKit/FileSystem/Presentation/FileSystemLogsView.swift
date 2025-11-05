@@ -36,7 +36,12 @@ private struct FileSystemLogSectionView: View {
     var body: some View {
         Section {
             LabeledContent("Root Directory") {
-                Label(log.rootDirectory.title, systemImage: log.rootDirectory.systemImage)
+                HStack(spacing: 4) {
+                    Text(log.rootDirectory.title)
+                    Image(systemName: log.rootDirectory.systemImage)
+                }
+                .font(.callout.weight(.semibold))
+                .foregroundStyle(.secondary)
             }
             LabeledContent("Timestamp", value: log.timestamp, format: .dateTime.hour().minute().second().secondFraction(.fractional(3)))
             ForEach(Array(log.difference), id: \.self) { change in

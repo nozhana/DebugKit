@@ -8,18 +8,13 @@
 import SwiftUI
 
 public struct DebugMenuView: View {
-    @State private var networkLogManager = NetworkLogManager()
-    @State private var fileSystemLogManager = FileSystemLogManager()
-    @State private var databaseLogManager = DatabaseLogManager()
+    @Bindable private var networkLogManager = NetworkLogManager.shared
+    @Bindable private var fileSystemLogManager = FileSystemLogManager.shared
+    @Bindable private var databaseLogManager = DatabaseLogManager.shared
     
     @State private var currentTasks: (data: [URLSessionDataTask], upload: [URLSessionUploadTask], download: [URLSessionDownloadTask]) = ([], [] ,[])
     
     public init() {}
-    
-    // FIXME: DEBUG
-    @State private var urlField = "https://dummyjson.com/recipes"
-    @FocusState private var focused: Bool
-    @State private var isLoading = false
     
     public var body: some View {
         NavigationStack {
@@ -49,7 +44,7 @@ public struct DebugMenuView: View {
                         Text("^[\(currentTasks.download.count) task](inflect: true)")
                             .contentTransition(.numericText(value: Double(currentTasks.download.count)))
                     } label: {
-                        Label("Active Download Tasks", systemImage: "tray.and.arrow.up")
+                        Label("Active Download Tasks", systemImage: "tray.and.arrow.down")
                     }
                     .bold(currentTasks.download.count > 0)
                     .animation(.smooth, value: currentTasks.download.count)
@@ -86,67 +81,14 @@ public struct DebugMenuView: View {
                     Label("Database", systemImage: "swiftdata")
                 }
                 
-                // FIXME: DEBUG
-                Section {
-                    TextField("Test URL", text: $urlField, prompt: Text(verbatim: "https://google.com/..."))
-                        .focused($focused)
-                        .disabled(isLoading)
-                    Button("Perform Request", systemImage: "tray.and.arrow.down") {
-                        do {
-                            guard let url = URL(string: urlField) else {
-                                focused = true
-                                return
-                            }
-                            Task {
-                                isLoading = true
-                                defer {
-                                    isLoading = false
-                                }
-                                do {
-                                    try await Task.sleep(for: .seconds(2))
-                                    let (data, response) = try await URLSession.debug.data(from: url)
-                                    print("Request finished successfully: \(data)\nResponse: \(response)")
-                                } catch {
-                                    print("Request failed: \(error.localizedDescription)")
-                                    print("Type: \(String(describing: type(of: error)))")
-                                    print("Reflection: \(String(reflecting: error))")
-                                }
-                            }
-                        }
-                    }
-                    .disabled(isLoading)
-                    .safeAreaInset(edge: .trailing, spacing: 16) {
-                        if isLoading {
-                            ProgressView()
-                        }
-                    }
+                let callback: PostMessageCallback = { message in
+                    NotificationCenter.default.post(name: .debugMenuMessage, object: nil, userInfo: ["message": message])
                 }
-                
-                // FIXME: DEBUG
-                Section {
-                    let base = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-                    let urls = (0..<5).reduce(into: [URL]()) { partialResult, index in
-                        let url = base.appendingPathComponent("test\(index).txt", conformingTo: .text)
-                        partialResult.append(url)
-                    }
-                    
-                    Button("Create test files") {
-                        Task {
-                            let data = "Hello, World!".data(using: .utf8)!
-                            for url in urls {
-                                try data.write(to: url)
-                                try await Task.sleep(for: .seconds(1))
-                            }
-                        }
-                    }
-                    Button("Remove test files") {
-                        Task {
-                            for url in urls {
-                                try FileManager.default.removeItem(at: url)
-                                try await Task.sleep(for: .seconds(1))
-                            }
-                        }
-                    }
+                AnyView(DebugMenuPresenter.shared.content(callback))
+            }
+            .toolbar {
+                Button("Done", systemImage: "checkmark") {
+                    DebugMenuPresenter.shared.dismiss()
                 }
             }
             .navigationTitle("Debug Menu")
@@ -154,5 +96,49 @@ public struct DebugMenuView: View {
         .environment(databaseLogManager)
         .environment(fileSystemLogManager)
         .environment(networkLogManager)
+    }
+}
+
+extension DebugMenuView {
+    public static func present() {
+        _ = DebugMenuPresenter.shared
+        NotificationCenter.default.post(name: .presentDebugMenu, object: nil)
+    }
+    
+    public static func presentNetworkLogs() {
+        _ = DebugMenuPresenter.shared
+        NotificationCenter.default.post(name: .presentNetworkLogs, object: nil)
+    }
+    
+    public static func presentNetworkEvents() {
+        _ = DebugMenuPresenter.shared
+        NotificationCenter.default.post(name: .presentNetworkEvents, object: nil)
+    }
+    
+#if os(iOS)
+    public enum ShakeMode: Int, CaseIterable, CustomStringConvertible {
+        case debugMenu, networkLogs, networkEvents, disabled = -1
+        
+        public var description: String {
+            switch self {
+            case .debugMenu: "Debug Menu"
+            case .networkLogs: "Network Logs"
+            case .networkEvents: "Network Events"
+            case .disabled: "Disabled"
+            }
+        }
+    }
+    
+    public static var shakeMode: ShakeMode {
+        get { DebugMenuPresenter.shared.shakeMode }
+        set { DebugMenuPresenter.shared.shakeMode = newValue }
+    }
+#endif
+    
+    public typealias PostMessageCallback = (_ message: String) -> Void
+    public typealias Content = (_ post: @escaping PostMessageCallback) -> any View
+    
+    public static func registerContent(@ViewBuilder _ content: @escaping (_ post: @escaping PostMessageCallback) -> some View) {
+        DebugMenuPresenter.shared.content = content
     }
 }
