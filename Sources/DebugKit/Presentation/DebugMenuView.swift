@@ -144,6 +144,7 @@ extension DebugMenuView {
     
     public static func onMessage(_ messages: DebugMenuMessage..., perform action: @escaping (_ message: DebugMenuMessage) -> Void) -> AnyCancellable {
         messagePublisher
+            .receive(on: RunLoop.main)
             .sink { message in
                 if messages.isEmpty || messages.contains(message) {
                     action(message)
@@ -153,6 +154,7 @@ extension DebugMenuView {
     
     public static func onMessage(_ messages: DebugMenuMessage..., perform action: @escaping () -> Void) -> AnyCancellable {
         messagePublisher
+            .receive(on: RunLoop.main)
             .sink { message in
                 if messages.isEmpty || messages.contains(message) {
                     action()

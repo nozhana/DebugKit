@@ -19,7 +19,7 @@ struct EnvironmentPublisherModifier<P>: ViewModifier where P: Publisher, P.Failu
     
     func body(content: Content) -> some View {
         content
-            .onReceive(publisher, perform: action)
+            .onReceive(publisher.receive(on: RunLoop.main), perform: action)
     }
 }
 

@@ -11,6 +11,7 @@ import SwiftUI
 extension EnvironmentValues {
     public var debugMenuMessage: some Publisher<DebugMenuMessage, Never> {
         NotificationCenter.default.publisher(for: .debugMenuMessage)
+            .receive(on: RunLoop.main)
             .compactMap({ $0.userInfo?["message"] as? DebugMenuMessage })
     }
 }
