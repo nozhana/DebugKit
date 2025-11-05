@@ -23,6 +23,8 @@ final class DebugMenuPresenter: @unchecked Sendable {
     }
 #endif
     
+    var presentationMode: DebugMenuView.PresentationMode = .flip
+    
     var content: DebugMenuView.Content = { _ in EmptyView() }
     
     private var presentCancellables: Set<AnyCancellable> = []
@@ -62,7 +64,9 @@ final class DebugMenuPresenter: @unchecked Sendable {
         }
         let vc = UIHostingController(rootView: content)
         vc.modalPresentationStyle = fullScreen ? .fullScreen : .automatic
-        vc.modalTransitionStyle = fullScreen ? .flipHorizontal : .coverVertical
+        if presentationMode == .flip {
+            vc.modalTransitionStyle = fullScreen ? .flipHorizontal : .coverVertical
+        }
         topVc?.present(vc, animated: true) {
             self.isPresented = true
         }
@@ -115,6 +119,36 @@ final class DebugMenuPresenter: @unchecked Sendable {
         }
     }
     
+    private func presentFileSystemLogs() {
+        DispatchQueue.main.async {
+            let logsView = NavigationStack {
+                FileSystemLogsView()
+            }
+            .onDisappear {
+                self.presentedVC = nil
+                self.isPresented = false
+            }
+            .environment(FileSystemLogManager.shared)
+            
+            self.present(logsView, fullScreen: false)
+        }
+    }
+    
+    private func presentDatabaseLogs() {
+        DispatchQueue.main.async {
+            let logsView = NavigationStack {
+                DatabaseLogsView()
+            }
+            .onDisappear {
+                self.presentedVC = nil
+                self.isPresented = false
+            }
+            .environment(DatabaseLogManager.shared)
+            
+            self.present(logsView, fullScreen: false)
+        }
+    }
+    
 #if os(iOS)
     private func setupShakeObservation() {
         shakeCancellable = shakeMode == .disabled ? nil : NotificationCenter.default.publisher(for: .deviceDidShake)
@@ -128,6 +162,10 @@ final class DebugMenuPresenter: @unchecked Sendable {
                     presentNetworkLogs()
                 case .networkEvents:
                     presentNetworkEvents()
+                case .fileSystemLogs:
+                    presentFileSystemLogs()
+                case .databaseLogs:
+                    presentDatabaseLogs()
                 default:
                     break
                 }
@@ -158,6 +196,20 @@ final class DebugMenuPresenter: @unchecked Sendable {
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 self?.presentNetworkEvents()
+            }
+            .store(in: &presentCancellables)
+        
+        NotificationCenter.default.publisher(for: .presentFileSystemLogs)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.presentFileSystemLogs()
+            }
+            .store(in: &presentCancellables)
+        
+        NotificationCenter.default.publisher(for: .presentDatabaseLogs)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.presentDatabaseLogs()
             }
             .store(in: &presentCancellables)
     }

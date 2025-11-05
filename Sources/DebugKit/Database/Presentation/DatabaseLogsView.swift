@@ -5,6 +5,7 @@
 //  Created by Nozhan A. on 11/5/25.
 //
 
+import SwiftData
 import SwiftUI
 
 struct DatabaseLogsView: View {
@@ -47,20 +48,64 @@ private struct DatabaseLogSectionView: View {
                     LabeledContent("Inserted") {
                         Text("+^[\(inserted.count) item](inflect: true)")
                     }
+                    ForEach(inserted.sorted()) { id in
+                        objectRow(for: id, systemImage: "plus", foregroundStyle: .green)
+                    }
                 }
                 if !updated.isEmpty {
                     LabeledContent("Updated") {
                         Text("^[\(updated.count) item](inflect: true)")
+                    }
+                    ForEach(updated.sorted()) { id in
+                        objectRow(for: id, systemImage: "arrow.trianglehead.2.counterclockwise.rotate.90", foregroundStyle: .blue)
                     }
                 }
                 if !deleted.isEmpty {
                     LabeledContent("Deleted") {
                         Text("-^[\(deleted.count) item](inflect: true)")
                     }
+                    ForEach(deleted.sorted()) { id in
+                        objectRow(for: id, systemImage: "minus", foregroundStyle: .red)
+                    }
                 }
             }
         } header: {
             Label(log.event.title, systemImage: log.event.systemImage)
+        }
+    }
+    
+    @ViewBuilder
+    private func objectRow(for id: PersistentIdentifier, systemImage: String, foregroundStyle: some ShapeStyle) -> some View {
+        if let jsonData = try? JSONEncoder().encode(id),
+           let jsonObject = try? JSONDecoder().decode(AnyJSONObject.self, from: jsonData),
+           case .object(let implementation) = jsonObject["implementation"] {
+            let (entityName, primaryKey): (String, String) = {
+                if case .string(let entityName) = implementation["entityName"],
+                   case .string(let primaryKey) = implementation["primaryKey"] {
+                    return (entityName, primaryKey)
+                }
+                return ("N/A", "N/A")
+            }()
+            
+            NavigationLink {
+                AnyJSONObjectVisualizerView(object: implementation)
+                    .navigationTitle("\(entityName) | \(primaryKey)")
+            } label: {
+                Label {
+                    HStack(spacing: 8) {
+                        Text(entityName)
+                        Divider()
+                        Text(primaryKey)
+                            .bold()
+                    }
+                } icon: {
+                    Image(systemName: systemImage)
+                }
+                .foregroundStyle(foregroundStyle)
+            }
+        } else {
+            Label("N/A", systemImage: systemImage)
+                .foregroundStyle(foregroundStyle)
         }
     }
 }

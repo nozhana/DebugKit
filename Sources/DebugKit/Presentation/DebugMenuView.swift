@@ -102,30 +102,64 @@ public struct DebugMenuView: View {
 }
 
 extension DebugMenuView {
+    public static func initialize() {
+        _ = DebugMenuPresenter.shared
+        _ = NetworkLogManager.shared
+        _ = FileSystemLogManager.shared
+        _ = DatabaseLogManager.shared
+    }
+    
+    public enum Component {
+        case debugMenu, networkLogs, networkEvents, fileSystemLogs, databaseLogs
+        
+        var notification: Notification.Name {
+            switch self {
+            case .debugMenu: .presentDebugMenu
+            case .networkLogs: .presentNetworkLogs
+            case .networkEvents: .presentNetworkEvents
+            case .fileSystemLogs: .presentFileSystemLogs
+            case .databaseLogs: .presentDatabaseLogs
+            }
+        }
+    }
+    
+    public static func present(_ component: Component) {
+        initialize()
+        NotificationCenter.default.post(name: component.notification, object: nil)
+    }
+    
     public static func present() {
-        _ = DebugMenuPresenter.shared
-        NotificationCenter.default.post(name: .presentDebugMenu, object: nil)
+        present(.debugMenu)
     }
     
-    public static func presentNetworkLogs() {
-        _ = DebugMenuPresenter.shared
-        NotificationCenter.default.post(name: .presentNetworkLogs, object: nil)
+    public enum PresentationMode: CaseIterable, CustomStringConvertible {
+        case cover, flip
+        
+        public var description: String {
+            switch self {
+            case .cover: "Vertical Cover"
+            case .flip: "Horizontal Flip"
+            }
+        }
     }
     
-    public static func presentNetworkEvents() {
-        _ = DebugMenuPresenter.shared
-        NotificationCenter.default.post(name: .presentNetworkEvents, object: nil)
+    public static var presentationMode: PresentationMode {
+        get { DebugMenuPresenter.shared.presentationMode }
+        set { DebugMenuPresenter.shared.presentationMode = newValue }
     }
     
 #if os(iOS)
     public enum ShakeMode: Int, CaseIterable, CustomStringConvertible {
-        case debugMenu, networkLogs, networkEvents, disabled = -1
+        case debugMenu, networkLogs, networkEvents, fileSystemLogs, databaseLogs
+        case disabled = -1
         
         public var description: String {
             switch self {
             case .debugMenu: "Debug Menu"
             case .networkLogs: "Network Logs"
             case .networkEvents: "Network Events"
+            case .fileSystemLogs: "File System Logs"
+            case .databaseLogs: "Database Logs"
             case .disabled: "Disabled"
             }
         }
@@ -167,5 +201,9 @@ extension DebugMenuView {
     
     public static func registerContent(@ViewBuilder _ content: @escaping (_ post: @escaping PostMessageCallback) -> some View) {
         DebugMenuPresenter.shared.content = content
+    }
+    
+    public static func registerContent(@ViewBuilder _ content: @escaping () -> some View) {
+        DebugMenuPresenter.shared.content = { _ in content() }
     }
 }

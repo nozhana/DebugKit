@@ -11,7 +11,7 @@ import UIKit
 extension UIWindow {
     open override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
         guard motion == .motionShake else { return }
-        _ = DebugMenuPresenter.shared
+        DebugMenuView.initialize()
         NotificationCenter.default.post(name: .deviceDidShake, object: nil)
     }
 }

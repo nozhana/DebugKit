@@ -146,7 +146,7 @@ enum NetworkError: RawRepresentable, LocalizedError, CustomStringConvertible, Eq
             case .unsupportedMediaType: "415 Unsupported Media Type"
             case .rangeNotSatisfiable: "416 Range Not Satisfiable"
             case .expectationFailed: "417 Expectation Failed"
-            case .imATeapot: "418 I'm A Teapot!"
+            case .imATeapot: "418 I'm A Teapot"
             case .misdirectedRequest: "421 Misdirected Request"
             case .unprocessableContent: "422 Unprocessable Content"
             case .locked: "423 Locked"

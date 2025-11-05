@@ -126,11 +126,22 @@ private struct NetworkLogSectionView: View {
                log.response?.mimeType?.starts(with: "image") == true,
                let data = log.responseData,
                let image = UIImage(data: data) {
-                LabeledContent("Image") {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Image")
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFit()
                         .clipShape(.rect(cornerRadius: 12))
+                        .padding(16)
+                        .frame(height: 300)
+                }
+            }
+            if log.isCompleted,
+               log.response?.mimeType?.starts(with: "image/svg") == true,
+               let data = log.responseData {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Image")
+                    WebView(svgData: data, request: log.request)
                         .padding(16)
                         .frame(height: 300)
                 }
@@ -145,15 +156,24 @@ private struct NetworkLogSectionView: View {
                     return tmp
                 }()
                 let player = AVPlayer(url: url)
-                LabeledContent {
-                    VideoPlayer(player: player)
-                        .aspectRatio(1, contentMode: .fit)
-                } label: {
+                VStack(alignment: .leading, spacing: 8) {
                     Button("Play Video", systemImage: "play") {
                         player.pause()
                         player.seek(to: .zero)
                         player.play()
                     }
+                    VideoPlayer(player: player)
+                        .aspectRatio(1, contentMode: .fit)
+                }
+            }
+            if log.isCompleted,
+               log.response?.mimeType == "text/html" {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Web Page")
+                    WebView(request: log.request,
+                            simulatedResponse: log.response,
+                            simulatedResponseData: log.responseData)
+                    .frame(height: 300)
                 }
             }
         } header: {

@@ -67,7 +67,7 @@ struct AnyJSONVisualizerView: View {
             LabeledContent(key, value: date, format: .dateTime.timeZone(.genericLocation).year().month().day().hour().minute().second().secondFraction(.fractional(3)))
         case .string(let string):
             LabeledContent(key, value: string)
-                .if(URL(string: string)?.scheme != nil) {
+                .if(URL(string: string)?.scheme?.starts(with: /https?/) == true) {
                     $0.safeAreaInset(edge: .trailing, spacing: 16) {
                         if let url = URL(string: string), url.scheme != nil {
                             if loadImage {
