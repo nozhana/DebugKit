@@ -200,10 +200,11 @@ extension DebugMenuView {
     public typealias Content = (_ post: @escaping PostMessageCallback) -> any View
     
     public static func registerContent(@ViewBuilder _ content: @escaping (_ post: @escaping PostMessageCallback) -> some View) {
+        initialize()
         DebugMenuPresenter.shared.content = content
     }
     
     public static func registerContent(@ViewBuilder _ content: @escaping () -> some View) {
-        DebugMenuPresenter.shared.content = { _ in content() }
+        registerContent { _ in content() }
     }
 }

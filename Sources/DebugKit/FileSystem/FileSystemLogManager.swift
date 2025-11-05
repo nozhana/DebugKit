@@ -47,12 +47,14 @@ final class FileSystemLogManager {
     }
     
     private func retrievePersistedLogs() {
-        guard let contents = try? FileManager.default.contentsOfDirectory(at: .fileSystemLogs, includingPropertiesForKeys: nil) else { return }
-        persistedLogs = contents.reduce(into: []) { partialResult, url in
-            guard let data = try? Data(contentsOf: url),
-                  let log = try? JSONDecoder().decode(FileSystemLog.self, from: data) else { return }
-            partialResult.push(log)
-        }
+        guard let contents = try? FileManager.default.contentsOfDirectory(at: .fileSystemLogs, includingPropertiesForKeys: [.creationDateKey]) else { return }
+        persistedLogs = contents
+            .sorted(using: KeyPathComparator(\.creationDate))
+            .reduce(into: []) { partialResult, url in
+                guard let data = try? Data(contentsOf: url),
+                      let log = try? JSONDecoder().decode(FileSystemLog.self, from: data) else { return }
+                partialResult.push(log)
+            }
     }
     
     private func setupBindings() {
@@ -68,6 +70,7 @@ final class FileSystemLogManager {
                       let rootDirectory = FileSystemRootDirectory(rawValue: path) else { return }
                 let contents = try! FileManager.default.contentsOfDirectory(at: path, includingPropertiesForKeys: nil)
                 let difference = contents.difference(from: self.contents[rootDirectory] ?? []).inferringMoves()
+                guard !difference.isEmpty else { return }
                 let log = FileSystemLog(rootDirectory: rootDirectory, event: event, difference: difference)
                 logs.push(log)
                 self.contents[rootDirectory] = contents

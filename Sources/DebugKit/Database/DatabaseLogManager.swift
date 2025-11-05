@@ -41,12 +41,14 @@ final class DatabaseLogManager {
     }
     
     private func retrievePersistedLogs() {
-        guard let contents = try? FileManager.default.contentsOfDirectory(at: .databaseLogs, includingPropertiesForKeys: nil) else { return }
-        persistedLogs = contents.reduce(into: []) { partialResult, url in
-            guard let data = try? Data(contentsOf: url),
-                  let log = try? JSONDecoder().decode(DatabaseLog.self, from: data) else { return }
-            partialResult.push(log)
-        }
+        guard let contents = try? FileManager.default.contentsOfDirectory(at: .databaseLogs, includingPropertiesForKeys: [.creationDateKey]) else { return }
+        persistedLogs = contents
+            .sorted(using: KeyPathComparator(\.creationDate))
+            .reduce(into: []) { partialResult, url in
+                guard let data = try? Data(contentsOf: url),
+                      let log = try? JSONDecoder().decode(DatabaseLog.self, from: data) else { return }
+                partialResult.push(log)
+            }
     }
     
     private func setupBindings() {

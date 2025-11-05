@@ -47,13 +47,15 @@ final class NetworkLogManager {
     }
     
     private func retrievePersistedLogs() {
-        guard let contents = try? FileManager.default.contentsOfDirectory(at: .networkLogs, includingPropertiesForKeys: nil) else { return }
-        persistedLogs = contents.reduce(into: []) { partialResult, url in
-            guard let data = try? Data(contentsOf: url),
-                  let dto = try? JSONDecoder().decode(NetworkLogDTO.self, from: data) else { return }
-            let log = NetworkLog(dto: dto)
-            partialResult.push(log)
-        }
+        guard let contents = try? FileManager.default.contentsOfDirectory(at: .networkLogs, includingPropertiesForKeys: [.creationDateKey]) else { return }
+        persistedLogs = contents
+            .sorted(using: KeyPathComparator(\.creationDate))
+            .reduce(into: []) { partialResult, url in
+                guard let data = try? Data(contentsOf: url),
+                      let dto = try? JSONDecoder().decode(NetworkLogDTO.self, from: data) else { return }
+                let log = NetworkLog(dto: dto)
+                partialResult.push(log)
+            }
     }
     
     private func setupBindings() {

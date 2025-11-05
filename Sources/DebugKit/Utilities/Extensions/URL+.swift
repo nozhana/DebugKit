@@ -32,3 +32,16 @@ extension URL {
         return dir
     }()
 }
+
+extension URL {
+    var creationDate: Date? {
+        get {
+            try? resourceValues(forKeys: [.creationDateKey]).creationDate
+        }
+        set {
+            var resourceValues = URLResourceValues()
+            resourceValues.creationDate = newValue
+            try? setResourceValues(resourceValues)
+        }
+    }
+}
