@@ -23,6 +23,7 @@ public struct DebugMenuView: View {
                 Section {
                     NavigationLink("Logs", destination: NetworkLogsView.init)
                     NavigationLink("Events", destination: NetworkEventsView.init)
+                    NavigationLink("Management", destination: NetworkManagementView.init)
                     LabeledContent {
                         Text("^[\(currentTasks.data.count) task](inflect: true)")
                             .contentTransition(.numericText(value: Double(currentTasks.data.count)))
