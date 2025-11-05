@@ -48,10 +48,16 @@ final class DebugMenuPresenter: @unchecked Sendable {
     @MainActor
     func dismiss() {
         guard isPresented else { return }
+#if os(macOS)
+        guard let presentedVC,
+              let presentingVC = presentedVC.presentingViewController else { return }
+        presentingVC.dismiss(presentedVC)
+#elseif os(iOS)
         presentedVC?.dismiss(animated: true) { [weak self] in
             self?.presentedVC = nil
             self?.isPresented = false
         }
+#endif
     }
     
     @MainActor
@@ -76,7 +82,7 @@ final class DebugMenuPresenter: @unchecked Sendable {
         while topVc?.presentedViewControllers?.first != nil {
             topVc = topVc?.presentedViewControllers?.first
         }
-        let vc = NSHostingController(rootView: content())
+        let vc = NSHostingController(rootView: content)
         topVc?.presentAsSheet(vc)
         self.isPresented = true
         self.presentedVC = vc

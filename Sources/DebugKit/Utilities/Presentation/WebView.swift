@@ -5,7 +5,7 @@
 //  Created by Nozhan A. on 11/5/25.
 //
 
-#if os(iOS)
+// #if os(iOS)
 import SwiftUI
 import WebKit
 
@@ -44,7 +44,7 @@ struct WebView: View {
 }
 
 extension WebView {
-    struct _WebView: UIViewRepresentable {
+    struct _WebView: ViewRepresentable {
         var frame: CGRect
         var request: URLRequest?
         var simulatedResponse: (response: URLResponse, data: Data)?
@@ -62,16 +62,18 @@ extension WebView {
             self.navigationDelegate = .init(request: request)
         }
         
-        func makeUIView(context: Context) -> WKWebView {
+        func makePlatformView(context: Context) -> WKWebView {
             let view = WKWebView(frame: frame)
+#if os(iOS)
             if let scaleToFit {
                 view.scalesLargeContentImage = scaleToFit
             }
+#endif
             view.navigationDelegate = navigationDelegate
             return view
         }
         
-        func updateUIView(_ view: WKWebView, context: Context) {
+        func updatePlatformView(_ view: WKWebView, context: Context) {
             if let request,
                let simulatedResponse {
                 view.loadSimulatedRequest(request, response: simulatedResponse.response, responseData: simulatedResponse.data)
@@ -102,4 +104,4 @@ extension WebView {
         }
     }
 }
-#endif
+// #endif

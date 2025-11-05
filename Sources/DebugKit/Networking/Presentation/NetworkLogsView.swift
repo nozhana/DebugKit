@@ -125,10 +125,10 @@ private struct NetworkLogSectionView: View {
             if log.isCompleted,
                log.response?.mimeType?.starts(with: "image") == true,
                let data = log.responseData,
-               let image = UIImage(data: data) {
+               let image = PlatformImage(data: data) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Image")
-                    Image(uiImage: image)
+                    Image(platformImage: image)
                         .resizable()
                         .scaledToFit()
                         .clipShape(.rect(cornerRadius: 12))
