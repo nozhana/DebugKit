@@ -11,8 +11,14 @@ struct NetworkLogsView: View {
     @Environment(NetworkLogManager.self) private var manager
     
     var body: some View {
-        List(manager.logs) { log in
-            NetworkLogSectionView(log: log)
+        VStack(spacing: .zero) {
+            if manager.logs.isEmpty {
+                ContentUnavailableView("No Logs", systemImage: "cloud")
+            } else {
+                List(manager.logs) { log in
+                    NetworkLogSectionView(log: log)
+                }
+            }
         }
         .animation(.smooth, value: manager.logs)
         .toolbar {
@@ -34,9 +40,8 @@ private struct NetworkLogSectionView: View {
     @State private var isJSONExpanded = false
     
     var body: some View {
-        Section(log.id.uuidString) {
+        Section {
             LabeledContent("Request URL", value: log.request.url?.absoluteString ?? "N/A")
-            LabeledContent("Request HTTP Method", value: log.request.httpMethod ?? "N/A")
             if let headers = log.request.allHTTPHeaderFields?.mapValues({ AnyJSON(rawValue: $0) }) {
                 NavigationLink {
                     AnyJSONObjectVisualizerView(object: headers)
@@ -104,6 +109,22 @@ private struct NetworkLogSectionView: View {
                 }
                 .onTapGesture {
                     isJSONExpanded.toggle()
+                }
+            }
+        } header: {
+            HStack(spacing: 8) {
+                if let method = log.request.httpMethod {
+                    Text(method)
+                    Divider()
+                }
+                if let status = log.responseStatus {
+                    Label(status.description, systemImage: status.systemImage)
+                        .foregroundStyle(status.color.gradient)
+                } else if !log.isCompleted {
+                    ProgressView()
+                } else {
+                    Image(systemName: "questionmark.circle")
+                        .foregroundStyle(.secondary)
                 }
             }
         }

@@ -1,0 +1,45 @@
+//
+//  FileSystemLogManager.swift
+//  DebugKit
+//
+//  Created by Nozhan A. on 11/4/25.
+//
+
+import Combine
+import Foundation
+
+@Observable
+final class FileSystemLogManager {
+    @ObservationIgnored
+    private var cancellables = Set<AnyCancellable>()
+    
+    @ObservationIgnored
+    private let observers: [FileSystemRootDirectory: FileSystemObserver] = Dictionary(uniqueKeysWithValues: FileSystemRootDirectory.allCases.map { ($0, FileSystemObserver(path: $0.rawValue)) })
+    
+    @ObservationIgnored
+    private var contents: [FileSystemRootDirectory: [URL]] = Dictionary(uniqueKeysWithValues: FileSystemRootDirectory.allCases.map { ($0, try! FileManager.default.contentsOfDirectory(at: $0.rawValue, includingPropertiesForKeys: nil)) })
+    
+    var logs = Queue<FileSystemLog>(capacity: 50)
+    
+    init() {
+        setupBindings()
+    }
+    
+    private func setupBindings() {
+        NotificationCenter.default.publisher(for: .fileSystemDidChange)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] notification in
+                guard let self,
+                      let userInfo = notification.userInfo as? [String: Any],
+                      let event = userInfo["event"] as? FileSystemEvent,
+                      let path = userInfo["path"] as? URL,
+                      let rootDirectory = FileSystemRootDirectory(rawValue: path) else { return }
+                let contents = try! FileManager.default.contentsOfDirectory(at: path, includingPropertiesForKeys: nil)
+                let difference = contents.difference(from: self.contents[rootDirectory] ?? []).inferringMoves()
+                let log = FileSystemLog(rootDirectory: rootDirectory, event: event, difference: difference)
+                logs.push(log)
+                self.contents[rootDirectory] = contents
+            }
+            .store(in: &cancellables)
+    }
+}

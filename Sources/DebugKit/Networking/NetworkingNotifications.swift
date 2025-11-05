@@ -1,5 +1,5 @@
 //
-//  Notifications.swift
+//  NetworkingNotifications.swift
 //  DebugKit
 //
 //  Created by Nozhan A. on 11/4/25.

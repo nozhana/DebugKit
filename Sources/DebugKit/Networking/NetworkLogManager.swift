@@ -25,6 +25,7 @@ final class NetworkLogManager {
     
     private func setupBindings() {
         notificationCenter.publisher(for: .networkTaskStarted)
+            .receive(on: RunLoop.main)
             .sink { [weak self] notification in
                 guard let self,
                       let userInfo = notification.userInfo as? [String: Any],
@@ -43,6 +44,7 @@ final class NetworkLogManager {
             .store(in: &cancellables)
         
         notificationCenter.publisher(for: .networkTaskDidReceiveResponse)
+            .receive(on: RunLoop.main)
             .sink { [weak self] notification in
                 guard let self,
                       let userInfo = notification.userInfo as? [String: Any],
@@ -67,6 +69,7 @@ final class NetworkLogManager {
             .store(in: &cancellables)
         
         notificationCenter.publisher(for: .networkTaskDidLoadData)
+            .receive(on: RunLoop.main)
             .sink { [weak self] notification in
                 guard let self,
                       let userInfo = notification.userInfo as? [String: Any],
@@ -97,6 +100,7 @@ final class NetworkLogManager {
             .store(in: &cancellables)
         
         notificationCenter.publisher(for: .networkTaskFinished)
+            .receive(on: RunLoop.main)
             .sink { [weak self] notification in
                 guard let self,
                       let userInfo = notification.userInfo as? [String: Any],

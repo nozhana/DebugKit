@@ -47,7 +47,7 @@ extension NetworkLog {
         guard isCompleted,
               let responseData,
               let jsonObject = try? JSONSerialization.jsonObject(with: responseData, options: [.fragmentsAllowed]),
-              let prettyData = try? JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted, .sortedKeys]),
+              let prettyData = try? JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]),
               let prettyString = String(data: prettyData, encoding: .utf8) else { return nil }
         return prettyString
     }

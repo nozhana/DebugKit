@@ -5,7 +5,7 @@
 //  Created by Nozhan A. on 11/3/25.
 //
 
-import Foundation
+import SwiftUI
 
 enum NetworkResponseStatus: RawRepresentable, CustomStringConvertible {
     case informational(Informational)
@@ -50,6 +50,28 @@ enum NetworkResponseStatus: RawRepresentable, CustomStringConvertible {
         case .clientError(let clientError): clientError.rawValue
         case .serverError(let serverError): serverError.rawValue
         case .unknown(let statusCode): statusCode
+        }
+    }
+    
+    var systemImage: String {
+        switch self {
+        case .informational: "info.circle.fill"
+        case .success: "checkmark.circle.fill"
+        case .redirection: "arrowshape.turn.up.right.circle.fill"
+        case .clientError: "exclamationmark.circle.fill"
+        case .serverError: "exclamationmark.icloud.fill"
+        case .unknown: "questionmark.circle.fill"
+        }
+    }
+    
+    var color: Color {
+        switch self {
+        case .informational: .yellow
+        case .success: .green
+        case .redirection: .orange
+        case .clientError: .red
+        case .serverError: .red
+        case .unknown: .purple
         }
     }
     
