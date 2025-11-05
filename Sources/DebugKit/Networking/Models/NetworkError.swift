@@ -16,6 +16,14 @@ enum NetworkError: RawRepresentable, LocalizedError, CustomStringConvertible, Eq
     
     var errorDescription: String? { description }
     
+    var shortDescription: String {
+        switch self {
+        case .urlError(let urlError):
+            "URLError \(urlError.errorCode)"
+        default: description
+        }
+    }
+    
     var description: String {
         switch self {
         case .urlError(let urlError):
@@ -24,6 +32,14 @@ enum NetworkError: RawRepresentable, LocalizedError, CustomStringConvertible, Eq
             clientError.localizedDescription
         case .serverError(let serverError):
             serverError.localizedDescription
+        }
+    }
+    
+    var systemImage: String {
+        switch self {
+        case .urlError: "cube"
+        case .clientError: "exclamationmark.circle.fill"
+        case .serverError: "exclamationmark.icloud.fill"
         }
     }
     

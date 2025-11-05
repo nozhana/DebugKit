@@ -5,6 +5,7 @@
 //  Created by Nozhan A. on 11/3/25.
 //
 
+import Combine
 import SwiftUI
 
 public struct DebugMenuView: View {
@@ -135,7 +136,30 @@ extension DebugMenuView {
     }
 #endif
     
-    public typealias PostMessageCallback = (_ message: String) -> Void
+    public static var messagePublisher: some Publisher<DebugMenuMessage, Never> {
+        NotificationCenter.default.publisher(for: .debugMenuMessage)
+            .compactMap({ $0.userInfo?["message"] as? DebugMenuMessage })
+    }
+    
+    public static func onMessage(_ messages: DebugMenuMessage..., perform action: @escaping (_ message: DebugMenuMessage) -> Void) -> AnyCancellable {
+        messagePublisher
+            .sink { message in
+                if messages.isEmpty || messages.contains(message) {
+                    action(message)
+                }
+            }
+    }
+    
+    public static func onMessage(_ messages: DebugMenuMessage..., perform action: @escaping () -> Void) -> AnyCancellable {
+        messagePublisher
+            .sink { message in
+                if messages.isEmpty || messages.contains(message) {
+                    action()
+                }
+            }
+    }
+    
+    public typealias PostMessageCallback = (_ message: DebugMenuMessage) -> Void
     public typealias Content = (_ post: @escaping PostMessageCallback) -> any View
     
     public static func registerContent(@ViewBuilder _ content: @escaping (_ post: @escaping PostMessageCallback) -> some View) {

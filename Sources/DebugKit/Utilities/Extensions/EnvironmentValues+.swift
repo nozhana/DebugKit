@@ -9,14 +9,26 @@ import Combine
 import SwiftUI
 
 extension EnvironmentValues {
-    public var debugMenuMessage: some Publisher<String, Never> {
+    public var debugMenuMessage: some Publisher<DebugMenuMessage, Never> {
         NotificationCenter.default.publisher(for: .debugMenuMessage)
-            .compactMap({ $0.userInfo?["message"] as? String })
+            .compactMap({ $0.userInfo?["message"] as? DebugMenuMessage })
     }
 }
 
 extension View {
-    public func onDebugMenuMessage(perform action: @escaping (_ message: String) -> Void) -> some View {
-        onReceive(\.debugMenuMessage, perform: action)
+    public func onDebugMenuMessage(_ messages: DebugMenuMessage..., perform action: @escaping (_ message: DebugMenuMessage) -> Void) -> some View {
+        onReceive(\.debugMenuMessage) {
+            if messages.isEmpty || messages.contains($0) {
+                action($0)
+            }
+        }
+    }
+    
+    public func onDebugMenuMessage(_ messages: DebugMenuMessage..., perform action: @escaping () -> Void) -> some View {
+        onReceive(\.debugMenuMessage) {
+            if messages.isEmpty || messages.contains($0) {
+                action()
+            }
+        }
     }
 }

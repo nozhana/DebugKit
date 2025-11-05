@@ -5,6 +5,7 @@
 //  Created by Nozhan A. on 11/4/25.
 //
 
+import AVKit
 import SwiftUI
 
 struct NetworkLogsView: View {
@@ -70,6 +71,16 @@ private struct NetworkLogSectionView: View {
                 LabeledContent("Expected Content Length", value: "N/A")
             }
             LabeledContent("Mime Type", value: log.response?.mimeType ?? "N/A")
+            if let error = log.error {
+                LabeledContent("Error") {
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text(error.description)
+                            .font(.system(size: 15, weight: .medium))
+                        Image(systemName: error.systemImage)
+                    }
+                    .foregroundStyle(.red)
+                }
+            }
             if !log.isCompleted,
                let progress = log.progress {
                 LabeledContent("Progress") {
@@ -111,13 +122,50 @@ private struct NetworkLogSectionView: View {
                     isJSONExpanded.toggle()
                 }
             }
+            if log.isCompleted,
+               log.response?.mimeType?.starts(with: "image") == true,
+               let data = log.responseData,
+               let image = UIImage(data: data) {
+                LabeledContent("Image") {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFit()
+                        .clipShape(.rect(cornerRadius: 12))
+                        .padding(16)
+                        .frame(height: 300)
+                }
+            }
+            if log.isCompleted,
+               log.response?.mimeType?.starts(with: "video") == true,
+               let data = log.responseData {
+                let url = {
+                    let tmp = URL.temporaryDirectory.appendingPathComponent("video", conformingTo: .init(mimeType: log.response?.mimeType ?? "video/mp4", conformingTo: .movie) ?? .mpeg4Movie)
+                    try? FileManager.default.removeItem(at: tmp)
+                    try? data.write(to: tmp)
+                    return tmp
+                }()
+                let player = AVPlayer(url: url)
+                LabeledContent {
+                    VideoPlayer(player: player)
+                        .aspectRatio(1, contentMode: .fit)
+                } label: {
+                    Button("Play Video", systemImage: "play") {
+                        player.pause()
+                        player.seek(to: .zero)
+                        player.play()
+                    }
+                }
+            }
         } header: {
             HStack(spacing: 8) {
                 if let method = log.request.httpMethod {
                     Text(method)
                     Divider()
                 }
-                if let status = log.responseStatus {
+                if let error = log.error {
+                    Label(error.shortDescription, systemImage: error.systemImage)
+                        .foregroundStyle(.red)
+                } else if let status = log.responseStatus {
                     Label(status.description, systemImage: status.systemImage)
                         .foregroundStyle(status.color.gradient)
                 } else if !log.isCompleted {

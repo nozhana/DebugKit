@@ -62,6 +62,7 @@ final class DebugMenuPresenter: @unchecked Sendable {
         }
         let vc = UIHostingController(rootView: content)
         vc.modalPresentationStyle = fullScreen ? .fullScreen : .automatic
+        vc.modalTransitionStyle = fullScreen ? .flipHorizontal : .coverVertical
         topVc?.present(vc, animated: true) {
             self.isPresented = true
         }
