@@ -2,7 +2,7 @@
 
 Effortless Debug Menus for iOS Apps
 
-## Summary
+## Overview
 
 DebugKit is a lightweight but powerful tool to implement a Debug Menu in your app effortlessly.
 
