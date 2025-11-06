@@ -20,6 +20,7 @@ struct DatabaseLogsView: View {
                 List(manager.persistedLogs) { log in
                     DatabaseLogSectionView(log: log, isPersisted: Binding { true } set: { _ in manager.removePersistedLog(log) })
                 }
+                .animation(.smooth, value: manager.persistedLogs)
             } else if manager.logs.isEmpty {
                 ContentUnavailableView("No Logs", systemImage: "cylinder.split.1x2")
             } else {

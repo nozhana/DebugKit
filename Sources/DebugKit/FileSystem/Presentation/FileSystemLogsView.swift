@@ -19,6 +19,7 @@ struct FileSystemLogsView: View {
                 List(manager.persistedLogs) { log in
                     FileSystemLogSectionView(log: log, isPersisted: Binding { true } set: { _ in manager.removePersistedLog(log) })
                 }
+                .animation(.smooth, value: manager.persistedLogs)
             } else if manager.logs.isEmpty {
                 ContentUnavailableView("No Logs", systemImage: "folder.badge.questionmark")
             } else {

@@ -9,7 +9,9 @@ import Foundation
 
 extension URL {
     static let networkLogs = {
-        let dir = URL.cachesDirectory.appendingPathComponent("network_logs", conformingTo: .directory)
+        let dir = URL.cachesDirectory
+            .appendingPathComponent("com.nozhana.DebugKit", conformingTo: .directory)
+            .appendingPathComponent("network_logs", conformingTo: .directory)
         if !FileManager.default.fileExists(atPath: dir.path()) {
             try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         }
@@ -17,7 +19,9 @@ extension URL {
     }()
     
     static let databaseLogs = {
-        let dir = URL.cachesDirectory.appendingPathComponent("database_logs", conformingTo: .directory)
+        let dir = URL.cachesDirectory
+            .appendingPathComponent("com.nozhana.DebugKit", conformingTo: .directory)
+            .appendingPathComponent("database_logs", conformingTo: .directory)
         if !FileManager.default.fileExists(atPath: dir.path()) {
             try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         }
@@ -25,7 +29,9 @@ extension URL {
     }()
     
     static let fileSystemLogs = {
-        let dir = URL.cachesDirectory.appendingPathComponent("filesystem_logs", conformingTo: .directory)
+        let dir = URL.cachesDirectory
+            .appendingPathComponent("com.nozhana.DebugKit", conformingTo: .directory)
+            .appendingPathComponent("filesystem_logs", conformingTo: .directory)
         if !FileManager.default.fileExists(atPath: dir.path()) {
             try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         }

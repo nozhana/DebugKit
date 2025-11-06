@@ -62,3 +62,5 @@ extension Queue: ExpressibleByArrayLiteral {
 }
 
 extension Queue: Equatable where Element: Equatable {}
+extension Queue: Decodable where Element: Decodable {}
+extension Queue: Encodable where Element: Encodable {}

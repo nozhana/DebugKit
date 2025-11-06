@@ -20,7 +20,8 @@ final class FileSystemLogManager {
     private var contents: [FileSystemRootDirectory: [URL]] = Dictionary(uniqueKeysWithValues: FileSystemRootDirectory.allCases.map { ($0, try! FileManager.default.contentsOfDirectory(at: $0.rawValue, includingPropertiesForKeys: nil)) })
     
     @ObservationIgnored
-    private let persistentLogsObserver = FileSystemObserver(path: .fileSystemLogs)
+    private let storage = FSPersistentLogStorage
+        .ofType(FileSystemLog.self, path: .fileSystemLogs, fileName: \.id.uuidString)
     
     var logs = Queue<FileSystemLog>(capacity: 50)
     
@@ -32,33 +33,24 @@ final class FileSystemLogManager {
     
     private init() {
         setupBindings()
-        retrievePersistedLogs()
     }
     
     func persist(_ log: FileSystemLog) {
-        guard let data = try? JSONEncoder().encode(log) else { return }
-        let url = URL.fileSystemLogs.appendingPathComponent(log.id.uuidString, conformingTo: .json)
-        try? data.write(to: url)
+        storage.store(log)
     }
     
     func removePersistedLog(_ log: FileSystemLog) {
-        let url = URL.fileSystemLogs.appendingPathComponent(log.id.uuidString, conformingTo: .json)
-        try? FileManager.default.removeItem(at: url)
-    }
-    
-    private func retrievePersistedLogs() {
-        guard let contents = try? FileManager.default.contentsOfDirectory(at: .fileSystemLogs, includingPropertiesForKeys: [.creationDateKey]) else { return }
-        persistedLogs = contents
-            .sorted(using: KeyPathComparator(\.creationDate))
-            .reduce(into: []) { partialResult, url in
-                guard let data = try? Data(contentsOf: url),
-                      let log = try? JSONDecoder().decode(FileSystemLog.self, from: data) else { return }
-                partialResult.push(log)
-            }
+        storage.store(log)
     }
     
     private func setupBindings() {
-        persistentLogsObserver.onEvent(perform: retrievePersistedLogs)
+        storage.updatesPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] update in
+                guard let self else { return }
+                persistedLogs = update.newValue
+            }
+            .store(in: &cancellables)
         
         NotificationCenter.default.publisher(for: .fileSystemDidChange)
             .receive(on: RunLoop.main)
@@ -78,3 +70,15 @@ final class FileSystemLogManager {
             .store(in: &cancellables)
     }
 }
+
+extension UserDefaults {
+    private var fileSystemLogsDataKey: String {
+        "com.nozhana.DebugKit.UserDefaults.fileSystemLogsData"
+    }
+    
+    @objc dynamic var fileSystemLogsData: Data? {
+        get { data(forKey: fileSystemLogsDataKey) }
+        set { set(newValue, forKey: fileSystemLogsDataKey) }
+    }
+}
+

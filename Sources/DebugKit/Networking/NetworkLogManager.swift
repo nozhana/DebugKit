@@ -22,7 +22,8 @@ final class NetworkLogManager {
     private var cancellables: Set<AnyCancellable> = []
     
     @ObservationIgnored
-    private let persistentLogsObserver = FileSystemObserver(path: .networkLogs)
+    private let storage = FSPersistentLogStorage
+        .ofType(NetworkLog.self, serializer: NetworkLogSerializer.self, path: .networkLogs, fileName: \.id.uuidString)
     
     @ObservationIgnored
     @MainActor
@@ -30,36 +31,25 @@ final class NetworkLogManager {
     
     private init() {
         setupBindings()
-        retrievePersistedLogs()
     }
     
     func persist(_ log: NetworkLog) {
-        guard let dto = NetworkLogDTO(log: log),
-              let data = try? JSONEncoder().encode(dto) else { return }
-        let url = URL.networkLogs.appendingPathComponent(log.id.uuidString, conformingTo: .json)
-        try? FileManager.default.removeItem(at: url)
-        try? data.write(to: url)
+        storage.store(log)
     }
     
     func removePersistedLog(_ log: NetworkLog) {
-        let url = URL.networkLogs.appendingPathComponent(log.id.uuidString, conformingTo: .json)
-        try? FileManager.default.removeItem(at: url)
-    }
-    
-    private func retrievePersistedLogs() {
-        guard let contents = try? FileManager.default.contentsOfDirectory(at: .networkLogs, includingPropertiesForKeys: [.creationDateKey]) else { return }
-        persistedLogs = contents
-            .sorted(using: KeyPathComparator(\.creationDate))
-            .reduce(into: []) { partialResult, url in
-                guard let data = try? Data(contentsOf: url),
-                      let dto = try? JSONDecoder().decode(NetworkLogDTO.self, from: data) else { return }
-                let log = NetworkLog(dto: dto)
-                partialResult.push(log)
-            }
+        storage.remove(log)
     }
     
     private func setupBindings() {
-        persistentLogsObserver.onEvent(perform: retrievePersistedLogs)
+        storage.updatesPublisher
+            .receive(on: RunLoop.main)
+            .sink { [weak self] update in
+                guard let self else { return }
+                persistedLogs = update.newValue
+            }
+            .store(in: &cancellables)
+        
         
         notificationCenter.publisher(for: .networkTaskStarted)
             .receive(on: RunLoop.main)

@@ -15,7 +15,8 @@ final class DatabaseLogManager {
     private var cancellables = Set<AnyCancellable>()
     
     @ObservationIgnored
-    private let persistentLogsObserver = FileSystemObserver(path: .databaseLogs)
+    private let storage = FSPersistentLogStorage
+        .ofType(DatabaseLog.self, path: .databaseLogs, fileName: \.id.uuidString)
     
     var logs = Queue<DatabaseLog>(capacity: 50)
     private(set) var persistedLogs = Queue<DatabaseLog>()
@@ -26,33 +27,24 @@ final class DatabaseLogManager {
     
     private init() {
         setupBindings()
-        retrievePersistedLogs()
     }
     
     func persist(_ log: DatabaseLog) {
-        guard let data = try? JSONEncoder().encode(log) else { return }
-        let url = URL.databaseLogs.appendingPathComponent(log.id.uuidString, conformingTo: .json)
-        try? data.write(to: url)
+        storage.store(log)
     }
     
     func removePersistedLog(_ log: DatabaseLog) {
-        let url = URL.databaseLogs.appendingPathComponent(log.id.uuidString, conformingTo: .json)
-        try? FileManager.default.removeItem(at: url)
-    }
-    
-    private func retrievePersistedLogs() {
-        guard let contents = try? FileManager.default.contentsOfDirectory(at: .databaseLogs, includingPropertiesForKeys: [.creationDateKey]) else { return }
-        persistedLogs = contents
-            .sorted(using: KeyPathComparator(\.creationDate))
-            .reduce(into: []) { partialResult, url in
-                guard let data = try? Data(contentsOf: url),
-                      let log = try? JSONDecoder().decode(DatabaseLog.self, from: data) else { return }
-                partialResult.push(log)
-            }
+        storage.remove(log)
     }
     
     private func setupBindings() {
-        persistentLogsObserver.onEvent(perform: retrievePersistedLogs)
+        storage.updatesPublisher
+            .receive(on: RunLoop.main)
+            .sink { [weak self] update in
+                guard let self else { return }
+                persistedLogs = update.newValue
+            }
+            .store(in: &cancellables)
         
         NotificationCenter.default.publisher(for: ModelContext.didSave)
             .receive(on: RunLoop.main)
@@ -71,5 +63,16 @@ final class DatabaseLogManager {
                 self?.logs.push(log)
             }
             .store(in: &cancellables)
+    }
+}
+
+extension UserDefaults {
+    private var databaseLogsDataKey: String {
+        "com.nozhana.DebugKit.UserDefaults.databaseLogsData"
+    }
+    
+    @objc dynamic var databaseLogsData: Data? {
+        get { data(forKey: databaseLogsDataKey) }
+        set { set(newValue, forKey: databaseLogsDataKey) }
     }
 }
