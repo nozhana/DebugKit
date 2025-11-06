@@ -26,7 +26,7 @@ extension URLSession {
     /// }()
     /// ```
     ///
-    /// - SeeAlso: [`URLSessionConfiguration.debug`](Foundation/URLSessionConfiguration/debug)
+    /// - SeeAlso: `URLSessionConfiguration.`‌``Foundation/URLSessionConfiguration/debug``
     public static let debug = URLSession(configuration: .debug)
 }
 
@@ -37,7 +37,7 @@ extension URLSessionConfiguration {
     ///
     /// If you don't need to create a separate ``Foundation/URLSession`` instance, check out the shared ``Foundation/URLSession/debug`` session.
     ///
-    /// - SeeAlso: [`URLSession.debug`](Foundation/URLSession/debug)
+    /// - SeeAlso: `URLSession.`‌``Foundation/URLSession/debug``
     public static let debug = {
         defer {
             DispatchQueue.main.async {

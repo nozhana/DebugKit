@@ -348,7 +348,7 @@ extension DebugMenuView {
         DebugMenuPresenter.shared.content = content
     }
     
-    /// Registers customized content for the Debug Menu **without a ``PostMessageCallback``**.
+    /// Registers customized content for the Debug Menu without a ``PostMessageCallback``.
     /// - Parameter content: The ``Content`` to display in the Debug Menu below the proprietary controls.
     ///
     /// ## Usage
