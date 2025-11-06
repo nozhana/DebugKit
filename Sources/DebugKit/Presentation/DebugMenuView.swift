@@ -104,6 +104,19 @@ public struct DebugMenuView: View {
 
 extension DebugMenuView {
     /// Initialize necessary resources (i.e. Presenter, Network logger, File system logger, Database logger) on launch.
+    ///
+    /// Call this method as soon as the app starts.
+    /// ```swift
+    /// struct MyApp: App {
+    ///     init() {
+    ///         DebugMenuView.initialize()
+    ///     }
+    ///
+    ///     // ...
+    /// }
+    /// ```
+    ///
+    /// - Note: Calling ``registerContent(_:)-fdls`` implicitly invokes this method as well.
     public static func initialize() {
         _ = DebugMenuPresenter.shared
         _ = NetworkLogManager.shared
