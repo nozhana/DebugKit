@@ -91,9 +91,11 @@ private struct DatabaseLogSectionView: View {
                 Label(log.event.title, systemImage: log.event.systemImage)
                 Spacer()
                 Toggle("Persisted", systemImage: isPersisted ? "bookmark.fill" : "bookmark", isOn: $isPersisted)
+#if os(iOS)
                     .if(UIDevice.current.userInterfaceIdiom == .phone) {
                         $0.labelStyle(.iconOnly)
                     }
+#endif
                     .toggleStyle(.button)
                 
             }
