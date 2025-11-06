@@ -23,7 +23,7 @@ Add DebugKit to your project using Swift Package Manager:
 ## 📚 Documentation
 
 Read the full docs here:  
-👉 [https://nozhana.github.io/DebugKit/documentation/DebugKit](https://nozhana.github.io/DebugKit/documentation/DebugKit)
+👉 [https://nozhana.github.io/DebugKit/documentation/debugkit](https://nozhana.github.io/DebugKit/documentation/debugkit)
 
 ---
 
