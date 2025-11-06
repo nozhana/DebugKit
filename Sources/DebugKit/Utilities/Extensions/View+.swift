@@ -13,7 +13,6 @@ extension View {
     ///   - messages: A variadic array of debug menu messages to observe. If left empty, all messages will be observed.
     ///   - action: The action to perform when a message is received.
     /// - Returns: The observing view hierarchy.
-    /// - SeeAlso: ``onDebugMenuMessage(_:perform:)``
     public func onDebugMenuMessage(_ messages: DebugMenuMessage..., perform action: @escaping (_ message: DebugMenuMessage) -> Void) -> some View {
         onReceive(\.debugMenuMessage) {
             if messages.isEmpty || messages.contains($0) {
@@ -27,7 +26,6 @@ extension View {
     ///   - messages: A variadic array of debug menu messages to observe. If left empty, all messages will be observed.
     ///   - action: The action to perform when a message is received.
     /// - Returns: The observing view hierarchy.
-    /// - SeeAlso: ``onDebugMenuMessage(_:perform:)-3qicl``
     public func onDebugMenuMessage(_ messages: DebugMenuMessage..., perform action: @escaping () -> Void) -> some View {
         onReceive(\.debugMenuMessage) {
             if messages.isEmpty || messages.contains($0) {
