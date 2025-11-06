@@ -15,13 +15,13 @@ import AppKit
 #endif
 
 final class DebugMenuPresenter: @unchecked Sendable {
-#if os(iOS)
     var shakeMode: DebugMenuView.ShakeMode = .debugMenu {
         didSet {
+#if os(iOS)
             setupShakeObservation()
+#endif
         }
     }
-#endif
     
     var presentationMode: DebugMenuView.PresentationMode = .flip
     

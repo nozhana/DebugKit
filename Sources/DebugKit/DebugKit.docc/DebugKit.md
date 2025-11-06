@@ -64,8 +64,6 @@ Button("Present Debug Menu") {
 
 Alternatively, present a component to present as an argument.
 
-- SeeAlso: ``DebugMenuView/Component``
-
 ```swift
 Button("Present Network Logs") {
     DebugMenuView.present(.networkLogs)
@@ -74,11 +72,11 @@ Button("Present Network Logs") {
 
 Notice that the debug menu itself is presented in fullscreen, but the nested components are presented as modal sheets.
 
+- SeeAlso: ``DebugMenuView/Component``
+
 ### Presentation Mode
 
 Define how the ``DebugMenuView`` transitions into view.
-
-- SeeAlso: ``DebugMenuView/PresentationMode-swift.enum``
 
 ```swift
 Picker("Presentation Mode", selection: $presentationMode) {
@@ -91,6 +89,8 @@ Picker("Presentation Mode", selection: $presentationMode) {
     DebugMenuView.presentationMode = newValue
 }
 ```
+
+- SeeAlso: ``DebugMenuView/PresentationMode-swift.enum``
 
 ---
 
@@ -120,6 +120,8 @@ you can set the ``DebugMenuView/shakeMode-swift.type.property`` property to ``De
 DebugMenuView.shakeMode = .disabled
 ```
 
+- SeeAlso: ``DebugMenuView/ShakeMode-swift.enum``
+
 ## Topics
 
 ### Initialization
@@ -135,6 +137,16 @@ DebugMenuView.shakeMode = .disabled
 
 - ``DebugMenuView/present(_:)``
 - ``DebugMenuView/Component``
+
+### Presentation Mode
+
+- ``DebugMenuView/PresentationMode-swift.enum``
+- ``DebugMenuView/presentationMode-swift.type.property``
+
+### Present On Shake
+
+- ``DebugMenuView/ShakeMode-swift.enum``
+- ``DebugMenuView/shakeMode-swift.type.property``
 
 ### Registering Custom Content
 
