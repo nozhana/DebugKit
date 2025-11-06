@@ -8,6 +8,9 @@
 import Foundation
 
 extension Notification.Name {
+    /// A notification with this name is posted every time a debug menu message is received.
+    ///
+    /// - SeeAlso: ``DebugMenuMessage``
     public static let debugMenuMessage = Notification.Name("com.nozhana.DebugKit.Notifications.debugMenuMessage")
     
     static let presentDebugMenu = Notification.Name("com.nozhana.DebugKit.Notifications.presentDebugMenu")
