@@ -217,9 +217,11 @@ private struct NetworkLogSectionView: View {
                 }
                 Spacer()
                 Toggle("Persisted", systemImage: isPersisted ? "bookmark.fill" : "bookmark", isOn: $isPersisted)
+#if os(iOS)
                     .if(UIDevice.current.userInterfaceIdiom == .phone) {
                         $0.labelStyle(.iconOnly)
                     }
+#endif
                     .toggleStyle(.button)
             }
         }

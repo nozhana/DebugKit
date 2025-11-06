@@ -90,9 +90,11 @@ private struct FileSystemLogSectionView: View {
                 Label(log.event.description, systemImage: log.event.systemImage)
                 Spacer()
                 Toggle("Persisted", systemImage: isPersisted ? "bookmark.fill" : "bookmark", isOn: $isPersisted)
+#if os(iOS)
                     .if(UIDevice.current.userInterfaceIdiom == .phone) {
                         $0.labelStyle(.iconOnly)
                     }
+#endif
                     .toggleStyle(.button)
             }
         }
