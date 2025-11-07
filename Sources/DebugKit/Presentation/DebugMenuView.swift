@@ -353,7 +353,7 @@ extension DebugMenuView {
     /// ```
     ///
     /// - Note: Calling this method automatically initializes `DebugKit`, so there is no need to explicitly call ``initialize()`` if you're registering the content as soon as the app starts.
-    /// - SeeAlso: ``registerContent(_:)-(()->View)``, ``Content``, ``PostMessageCallback``, ``initialize()``
+    /// - SeeAlso: ``registerContent(_:)-3yg69``, ``Content``, ``PostMessageCallback``, ``initialize()``
     public static func registerContent(@ViewBuilder _ content: @escaping (_ post: @escaping PostMessageCallback) -> some View) {
         initialize()
         DebugMenuPresenter.shared.content = content
