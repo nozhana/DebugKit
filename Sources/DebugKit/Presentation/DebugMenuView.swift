@@ -13,6 +13,7 @@ public struct DebugMenuView: View {
     @Bindable private var networkLogManager = NetworkLogManager.shared
     @Bindable private var fileSystemLogManager = FileSystemLogManager.shared
     @Bindable private var databaseLogManager = DatabaseLogManager.shared
+    @Bindable private var systemInformationManager = SystemInformationManager.shared
     
     @State private var currentTasks: (data: [URLSessionDataTask], upload: [URLSessionUploadTask], download: [URLSessionDownloadTask]) = ([], [] ,[])
     
@@ -23,8 +24,11 @@ public struct DebugMenuView: View {
             List {
                 Section {
                     NavigationLink("Logs", destination: NetworkLogsView.init)
+                        .bold()
                     NavigationLink("Events", destination: NetworkEventsView.init)
+                        .bold()
                     NavigationLink("Management", destination: NetworkManagementView.init)
+                        .bold()
                     LabeledContent {
                         Text("^[\(currentTasks.data.count) task](inflect: true)")
                             .contentTransition(.numericText(value: Double(currentTasks.data.count)))
@@ -73,13 +77,118 @@ public struct DebugMenuView: View {
                 }
                 
                 Section {
+                    LabeledContent("Operating System", value: SystemInformation.operatingSystemName)
+                    LabeledContent("OS Version", value: SystemInformation.operatingSystemVersion)
+                    LabeledContent("Device Model", value: SystemInformation.deviceModel)
+                    LabeledContent("Running via Mac Catalyst", value: SystemInformation.isMacCatalystApp ? "Yes" : "No")
+                    LabeledContent("Running native iOS app on Mac", value: SystemInformation.isiOSAppOnMac ? "Yes" : "No")
+                    LabeledContent("Low-Power Mode", value: systemInformationManager.isLowPowerModeEnabled ? "On" : "Off")
+#if os(iOS)
+                    LabeledContent("Battery Level", value: systemInformationManager.batteryLevel, format: .percent.rounded(rule: .toNearestOrAwayFromZero, increment: 1))
+                    LabeledContent("Battery State", value: systemInformationManager.batteryState.description)
+#endif
+                    LabeledContent("Thermal State", value: systemInformationManager.thermalState.description)
+                    TimelineView(.animation(minimumInterval: 1)) { _ in
+                        let duration = Duration.seconds(SystemInformation.systemUpime)
+                        LabeledContent("System Uptime", value: duration, format: .time(pattern: .hourMinuteSecond))
+                            .contentTransition(.numericText(value: SystemInformation.systemUpime))
+                            .animation(.smooth, value: SystemInformation.systemUpime)
+                    }
+                    LabeledContent("System Startup", value: SystemInformation.systemStartup, format: .dateTime.month().day().hour().minute().second())
+                    TimelineView(.animation(minimumInterval: 1)) { timeline in
+                        LabeledContent("Current Time", value: timeline.date, format: .dateTime.month().day().hour().minute().second())
+                            .contentTransition(.numericText(value: timeline.date.timeIntervalSinceReferenceDate))
+                            .animation(.smooth, value: timeline.date)
+                    }
+                    TimelineView(.animation(minimumInterval: 1)) { timeline in
+                        LabeledContent("Memory in use", value: SystemInformation.basicMemoryUsage, format: .byteCount(style: .memory))
+                            .contentTransition(.numericText(value: SystemInformation.basicMemoryUsage.value))
+                            .animation(.smooth, value: timeline.date)
+                    }
+                    TimelineView(.animation(minimumInterval: 1)) { timeline in
+                        LabeledContent("VM memory in use", value: SystemInformation.virtualMemoryUsage, format: .byteCount(style: .memory))
+                            .contentTransition(.numericText(value: SystemInformation.virtualMemoryUsage.value))
+                            .animation(.smooth, value: timeline.date)
+                    }
+                    TimelineView(.animation(minimumInterval: 1)) { timeline in
+                        LabeledContent("Consumed energy", value: SystemInformation.powerUsage, format: .measurement(width: .wide, usage: .asProvided, numberFormatStyle: .number.precision(.fractionLength(0...3))))
+                            .contentTransition(.numericText(value: SystemInformation.powerUsage.value))
+                            .animation(.smooth, value: timeline.date)
+                    }
+                    NavigationLink("More Details", destination: SystemInformationView.init)
+                        .bold()
+                    NavigationLink("System Events", destination: SystemEventsView.init)
+                        .bold()
+                } header: {
+                    Label("System Information", systemImage: "info.circle")
+                }
+                
+                Section {
+                    LabeledContent("App Launches") {
+                        Text("^[\(SystemInformation.appLaunches) time](inflect: true)")
+                    }
+                    LabeledContent("Bundle Name", value: SystemInformation.bundleName)
+                    LabeledContent("Bundle Executable", value: SystemInformation.bundleExecutable)
+                    LabeledContent("Bundle Identifier", value: SystemInformation.bundleIdentifier)
+                    LabeledContent("Bundle Version", value: SystemInformation.bundleVersion)
+                    LabeledContent("Build Number", value: SystemInformation.bundleBuildNumber, format: .number)
+                    if SystemInformation.bundleInfoDictionary.isEmpty {
+                        LabeledContent("Bundle Info", value: "Empty")
+                    } else {
+                        NavigationLink {
+                            AnyJSONObjectVisualizerView(object: SystemInformation.bundleInfoDictionary)
+                                .navigationTitle("Bundle Info")
+                        } label: {
+                            LabeledContent("Bundle Info") {
+                                Text("^[\(SystemInformation.bundleInfoDictionary.count) key](inflect: true)")
+                            }
+                            .bold()
+                        }
+                    }
+                    if SystemInformation.environment.isEmpty {
+                        LabeledContent("Environment Values", value: "Empty")
+                    } else {
+                        NavigationLink {
+                            AnyJSONObjectVisualizerView(object: SystemInformation.environment.mapValues({ .string($0) }))
+                                .navigationTitle("Environment Values")
+                        } label: {
+                            LabeledContent("Environment Values") {
+                                Text("^[\(SystemInformation.environment.count) key](inflect: true)")
+                            }
+                            .bold()
+                        }
+                    }
+                    
+                    LabeledContent("Executable Path", value: SystemInformation.executablePath)
+                    
+                    if SystemInformation.arguments.isEmpty {
+                        LabeledContent("Command Line Arguments", value: "Empty")
+                    } else {
+                        NavigationLink {
+                            AnyJSONArrayVisualizerView(array: SystemInformation.arguments.map({ .string($0) }))
+                                .navigationTitle("Command Line Arguments")
+                        } label: {
+                            LabeledContent("Command Line Arguments") {
+                                Text("^[\(SystemInformation.arguments.count) argument](inflect: true)")
+                            }
+                            .bold()
+                        }
+                    }
+                } header: {
+                    Label("App Information", systemImage: "app")
+                }
+
+                
+                Section {
                     NavigationLink("Logs", destination: FileSystemLogsView.init)
+                        .bold()
                 } header: {
                     Label("File System", systemImage: "archivebox")
                 }
                 
                 Section {
                     NavigationLink("Logs", destination: DatabaseLogsView.init)
+                        .bold()
                 } header: {
                     Label("Database", systemImage: "swiftdata")
                 }
@@ -88,6 +197,24 @@ public struct DebugMenuView: View {
                     NotificationCenter.default.post(name: .debugMenuMessage, object: nil, userInfo: ["message": message])
                 }
                 AnyView(DebugMenuPresenter.shared.content(callback))
+                
+                Section {
+                    VStack(spacing: 6) {
+                        Text("Made with ♥︎")
+                            .font(.caption.weight(.semibold))
+                        HStack(alignment: .firstTextBaseline, spacing: 4) {
+                            Text("© 2025")
+                            Link("@nozhana", destination: URL(string: "https://github.com/nozhana")!)
+                                .bold()
+                                .underline()
+                        }
+                        .font(.caption2.weight(.medium))
+                    }
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity)
+                }
+                .listRowInsets(.init())
+                .listRowBackground(Color.clear)
             }
             .toolbar {
                 Button("Done", systemImage: "checkmark") {
@@ -96,6 +223,7 @@ public struct DebugMenuView: View {
             }
             .navigationTitle("Debug Menu")
         }
+        .environment(systemInformationManager)
         .environment(databaseLogManager)
         .environment(fileSystemLogManager)
         .environment(networkLogManager)
@@ -122,6 +250,7 @@ extension DebugMenuView {
         _ = NetworkLogManager.shared
         _ = FileSystemLogManager.shared
         _ = DatabaseLogManager.shared
+        _ = SystemInformationManager.shared
     }
     
     /// The component to draw over the top view using ``present(_:)``
