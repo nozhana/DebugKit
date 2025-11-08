@@ -199,22 +199,17 @@ public struct DebugMenuView: View {
                 AnyView(DebugMenuPresenter.shared.content(callback))
                 
                 Section {
-                    VStack(spacing: 6) {
-                        Text("Made with ♥︎")
-                            .font(.caption.weight(.semibold))
-                        HStack(alignment: .firstTextBaseline, spacing: 4) {
-                            Text("© 2025")
-                            Link("@nozhana", destination: URL(string: "https://github.com/nozhana")!)
-                                .bold()
-                                .underline()
-                        }
-                        .font(.caption2.weight(.medium))
+                    NavigationLink(destination: SettingsView.init) {
+                        Label("Settings", systemImage: "gearshape.fill")
+                            .foregroundStyle(.primary)
                     }
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
+                    NavigationLink(destination: AboutView.init) {
+                        Label("About", systemImage: "info.square")
+                            .foregroundStyle(.primary)
+                    }
+                } header: {
+                    Label("More", systemImage: "ellipsis")
                 }
-                .listRowInsets(.init())
-                .listRowBackground(Color.clear)
             }
             .toolbar {
                 Button("Done", systemImage: "checkmark") {
@@ -297,8 +292,8 @@ extension DebugMenuView {
         
         public var description: String {
             switch self {
-            case .cover: "Vertical Cover"
-            case .flip: "Horizontal Flip"
+            case .cover: "Cover"
+            case .flip: "Flip"
             }
         }
     }
