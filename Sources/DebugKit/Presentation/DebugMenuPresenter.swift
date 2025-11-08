@@ -14,33 +14,47 @@ import UIKit
 import AppKit
 #endif
 
+@Observable
 final class DebugMenuPresenter: @unchecked Sendable {
-    var shakeMode: DebugMenuView.ShakeMode = .debugMenu {
-        didSet {
+    var shakeMode: DebugMenuView.ShakeMode = .init(rawValue: UserDefaults.module.integer(forKey: .shakeModeKey))! {
+        willSet {
 #if os(iOS)
-            setupShakeObservation()
+            UserDefaults.module.set(newValue.rawValue, forKey: .shakeModeKey)
+            setupShakeObservation(for: newValue)
 #endif
         }
     }
     
-    var presentationMode: DebugMenuView.PresentationMode = .flip
+    var presentationMode: DebugMenuView.PresentationMode = .init(rawValue: UserDefaults.module.integer(forKey: .presentationModeKey))! {
+        willSet {
+            UserDefaults.module.set(newValue.rawValue, forKey: .presentationModeKey)
+        }
+    }
     
+    @ObservationIgnored
     var content: DebugMenuView.Content = { _ in EmptyView() }
     
+    @ObservationIgnored
     private var presentCancellables: Set<AnyCancellable> = []
 #if os(iOS)
+    @ObservationIgnored
     private var shakeCancellable: AnyCancellable?
 #endif
     
+    @ObservationIgnored
     private var isPresented = false
 #if os(iOS)
+    @ObservationIgnored
     private var presentedVC: UIViewController?
 #elseif os(macOS)
+    @ObservationIgnored
     private var presentedVC: NSViewController?
 #endif
     
     @MainActor
+    @ObservationIgnored
     static let shared = DebugMenuPresenter()
+    
     private init() {
         setupBindings()
     }
@@ -156,8 +170,8 @@ final class DebugMenuPresenter: @unchecked Sendable {
     }
     
 #if os(iOS)
-    private func setupShakeObservation() {
-        shakeCancellable = shakeMode == .disabled ? nil : NotificationCenter.default.publisher(for: .deviceDidShake)
+    private func setupShakeObservation(for mode: DebugMenuView.ShakeMode? = nil) {
+        shakeCancellable = (mode ?? shakeMode) == .disabled ? nil : NotificationCenter.default.publisher(for: .deviceDidShake)
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 guard let self else { return }
@@ -219,4 +233,11 @@ final class DebugMenuPresenter: @unchecked Sendable {
             }
             .store(in: &presentCancellables)
     }
+}
+
+private extension String {
+#if os(iOS)
+    static let shakeModeKey = "shakeMode"
+#endif
+    static let presentationModeKey = "presentationMode"
 }

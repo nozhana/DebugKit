@@ -8,24 +8,21 @@
 import SwiftUI
 
 struct SettingsView: View {
-#if os(iOS)
-    @State private var shakeMode = DebugMenuView.shakeMode
-#endif
-    @State private var presentationMode = DebugMenuView.presentationMode
+    @Bindable private var presenter = DebugMenuPresenter.shared
     
     var body: some View {
         List {
             Section {
 #if os(iOS)
-                Picker("Shake Mode", systemImage: "iphone.motion", selection: $shakeMode) {
+                Picker("Shake Mode", systemImage: "iphone.motion", selection: $presenter.shakeMode) {
                     ForEach(DebugMenuView.ShakeMode.allCases, id: \.rawValue) { mode in
                         Label(mode.description, systemImage: mode.systemImage)
                             .tag(mode)
                     }
                 }
 #endif
-                Picker("Presentation Mode", systemImage: "menubar.arrow.up.rectangle", selection: $presentationMode) {
-                    ForEach(DebugMenuView.PresentationMode.allCases, id: \.self) { mode in
+                Picker("Presentation Mode", systemImage: "menubar.arrow.up.rectangle", selection: $presenter.presentationMode) {
+                    ForEach(DebugMenuView.PresentationMode.allCases, id: \.rawValue) { mode in
                         Label(mode.description, systemImage: mode.systemImage)
                             .tag(mode)
                     }
@@ -33,14 +30,6 @@ struct SettingsView: View {
             } header: {
                 Label("Presentation", systemImage: "sparkle")
             }
-        }
-#if os(iOS)
-        .onChange(of: shakeMode) { _, newValue in
-            DebugMenuView.shakeMode = newValue
-        }
-#endif
-        .onChange(of: presentationMode) { _, newValue in
-            DebugMenuView.presentationMode = newValue
         }
         .navigationTitle("Settings")
     }

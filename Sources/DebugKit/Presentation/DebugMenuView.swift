@@ -287,7 +287,7 @@ extension DebugMenuView {
     /// - ``flip``
     ///
     /// - SeeAlso: ``presentationMode-swift.type.property``
-    public enum PresentationMode: CaseIterable, CustomStringConvertible {
+    public enum PresentationMode: Int, CaseIterable, CustomStringConvertible {
         case cover, flip
         
         public var description: String {
