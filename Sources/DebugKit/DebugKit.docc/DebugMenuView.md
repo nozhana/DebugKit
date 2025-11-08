@@ -48,7 +48,7 @@ extension DebugMenuMessage {
 
 ### Observe messages
 
-Now to receive it on a view, you can use the convenience ``SwiftUICore/View/onDebugMenuMessage(_:perform:)-(_,()->Void)`` modifier.
+To receive messages on a view, you can use the convenience ``SwiftUICore/View/onDebugMenuMessage(_:perform:)-(_,()->Void)`` modifier.
 
 ```swift
 var body: some View {
@@ -77,8 +77,11 @@ or by invoking ``DebugMenuView/onMessage(_:perform:)-6746m``.
             print("Debug menu message received!")
         }
         .store(in: &cancellables)
-
+    
+    // Access messagePublisher directly to modify the upstream
     DebugMenuView.messagePublisher
+        .prepend("Initial Message")
+        .collect(.byTime(RunLoop.main, 1))
         .sink { [weak self] message in 
             self?.handleMessage(message)
         }

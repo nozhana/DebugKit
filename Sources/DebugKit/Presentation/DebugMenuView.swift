@@ -397,7 +397,7 @@ extension DebugMenuView {
     /// }
     /// ```
     ///
-    /// - Warning: You should maintain a strong reference to the cancellable to keep the subscription alive,
+    /// - Warning: You should maintain a reference to the cancellable to keep the subscription alive,
     /// using `store(in:)` or assigning the cancellable to a property on a reference type object.
     ///
     /// - SeeAlso: ``onMessage(_:perform:)-9rdxn``
@@ -428,7 +428,7 @@ extension DebugMenuView {
     /// }
     /// ```
     ///
-    /// - Warning: You should maintain a strong reference to the cancellable to keep the subscription alive,
+    /// - Warning: You should maintain a reference to the cancellable to keep the subscription alive,
     /// using `store(in:)` or assigning the cancellable to a property on a reference type object.
     ///
     /// - SeeAlso: ``onMessage(_:perform:)-6746m``
