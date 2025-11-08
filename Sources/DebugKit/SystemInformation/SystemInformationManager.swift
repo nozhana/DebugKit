@@ -8,7 +8,6 @@
 import Foundation
 import Combine
 import QuartzCore
-import UIKit
 
 @MainActor
 @Observable
@@ -116,6 +115,7 @@ final class SystemInformationManager {
                       let memoryPressure = SystemEventType.MemoryPressure(event) else { return }
                 self?.events.push(.memoryPressure(memoryPressure))
             }
+            .store(in: &cancellables)
         
 #if os(iOS)
         NotificationCenter.default.publisher(for: SystemInformation.didReceiveLowMemoryWarningNotification)

@@ -19,9 +19,11 @@ struct SystemEvent: Codable {
         .init(type: .thermalState(event), timestamp: timestamp)
     }
     
+#if os(iOS)
     static func batteryState(_ event: SystemEventType.BatteryState, timestamp: Date = .now) -> SystemEvent {
         .init(type: .batteryState(event), timestamp: timestamp)
     }
+#endif
     
     static func powerState(_ event: SystemEventType.PowerState, timestamp: Date = .now) -> SystemEvent {
         .init(type: .powerState(event), timestamp: timestamp)

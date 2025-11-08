@@ -66,8 +66,10 @@ private extension SystemEventType {
             Label("Low Memory Warning", systemImage: "exclamationmark.triangle")
         case .thermalState:
             Label("Thermal State", systemImage: "thermometer.variable")
+#if os(iOS)
         case .batteryState:
             Label("Battery State", systemImage: "batteryblock")
+#endif
         case .powerState:
             Label("Low Power Mode", systemImage: "bolt")
         }
@@ -99,6 +101,7 @@ private extension SystemEventType {
             case .critical: Label("Critical", systemImage: "thermometer.sun.fill")
                     .foregroundStyle(.red)
             }
+#if os(iOS)
         case .batteryState(let batteryState):
             switch batteryState {
             case .unplugged: Label("Unplugged", systemImage: "battery.50percent")
@@ -107,6 +110,7 @@ private extension SystemEventType {
             case .full: Label("Full", systemImage: "battery.100percent")
                     .foregroundStyle(.green)
             }
+#endif
         case .powerState(let powerState):
             switch powerState {
             case .lowPower: Label("Enabled", systemImage: "bolt.circle.fill")
