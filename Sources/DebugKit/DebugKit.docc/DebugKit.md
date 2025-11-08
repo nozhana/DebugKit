@@ -52,7 +52,7 @@ struct MyApp: App {
 
 ## Present
 
-Present ``DebugMenuView`` anywhere in the app using a one-line code.
+Present ``DebugMenuView`` anywhere in the app using a one-line function call.
 
 ```swift
 Button("Present Debug Menu") {
@@ -62,7 +62,7 @@ Button("Present Debug Menu") {
 
 ### Present a component
 
-Alternatively, present a component to present as an argument.
+Alternatively, pass a component as an argument to ``DebugMenuView/present(_:)``.
 
 ```swift
 Button("Present Network Logs") {
@@ -70,7 +70,7 @@ Button("Present Network Logs") {
 }
 ```
 
-Notice that the debug menu itself is presented in fullscreen, but the nested components are presented as modal sheets.
+Notice that the debug menu itself is presented in full-screen, but the nested components are presented as modal sheets.
 
 - SeeAlso: ``DebugMenuView/Component``
 
@@ -80,7 +80,7 @@ Define how the ``DebugMenuView`` transitions into view.
 
 ```swift
 Picker("Presentation Mode", selection: $presentationMode) {
-    ForEach(DebugMenuView.PresentationMode.allCases, id: \.self) { mode in
+    ForEach(DebugMenuView.PresentationMode.allCases, id: \.rawValue) { mode in
         Text(mode.description)
             .tag(mode)
     }
@@ -90,6 +90,8 @@ Picker("Presentation Mode", selection: $presentationMode) {
 }
 ```
 
+- Note: You can also change the ``DebugMenuView/PresentationMode-swift.enum`` from the debug menu settings.
+
 - SeeAlso: ``DebugMenuView/PresentationMode-swift.enum``
 
 ---
@@ -97,7 +99,7 @@ Picker("Presentation Mode", selection: $presentationMode) {
 ## Shake
 
 Define what happens when the user shakes their device
-by customizing the ``DebugMenuView/shakeMode-swift.type.property`` property. (iPhone only)
+by customizing the ``DebugMenuView/shakeMode-swift.type.property`` property. (iOS only)
 
 ```swift
 Picker("Shake Mode", selection: $shakeMode) {
@@ -119,6 +121,8 @@ you can set the ``DebugMenuView/shakeMode-swift.type.property`` property to ``De
 ```swift
 DebugMenuView.shakeMode = .disabled
 ```
+
+- Note: You can also change the ``DebugMenuView/ShakeMode-swift.enum`` from the debug menu settings.
 
 - SeeAlso: ``DebugMenuView/ShakeMode-swift.enum``
 
